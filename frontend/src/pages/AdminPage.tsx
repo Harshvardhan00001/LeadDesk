@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Navbar } from '../components/Navbar';
@@ -51,14 +51,14 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     localStorage.removeItem('adminToken');
     navigate('/admin/login');
-  };
+  }, [navigate]);
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
-  const fetchLeads = async (searchQuery = '') => {
+  const fetchLeads = useCallback(async (searchQuery = '') => {
     try {
       setLoading(true);
       const token = localStorage.getItem('adminToken');
@@ -74,19 +74,20 @@ export default function AdminPage() {
       if (!res.ok) throw new Error('Failed to fetch leads');
       const data = await res.json();
       setLeads(data);
-    } catch (err) {
+    } catch (error) {
+      console.error('Error loading leads:', error);
       toast.error('Error loading leads');
     } finally {
       setLoading(false);
     }
-  };
+  }, [API_URL, handleLogout]);
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       fetchLeads(search);
     }, 400);
     return () => clearTimeout(delayDebounceFn);
-  }, [search]);
+  }, [fetchLeads, search]);
 
   const updateStatus = async (id: string, newStatus: string) => {
     const previousLeads = [...leads];
@@ -111,7 +112,8 @@ export default function AdminPage() {
       }
       if (!res.ok) throw new Error('Failed to update status');
       toast.success('Lead status updated');
-    } catch (err) {
+    } catch (error) {
+      console.error('Error updating status:', error);
       setLeads(previousLeads);
       toast.error('Error updating status');
     }
