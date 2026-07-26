@@ -100,11 +100,6 @@ npm install
 npm run dev
 ```
 
-> **Note:** On first startup, the backend automatically seeds a default admin account if none exists:
-> - Username: `admin`
-> - Password: `password123`
->
-> ⚠️ Change these credentials immediately in any non-local environment.
 
 ---
 
